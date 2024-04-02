@@ -176,7 +176,7 @@ const tfdf = window.tfdf;
 
 // Malaria incidence prediction
 const predictiveModelInference = async (weatherData) => {
-  // Load the model
+  // Load the model into memory
   const model = await tfdf.loadTFDFModel("http://127.0.0.1:3000/tfdf_model/model.json");
 
   // Perform an inference
@@ -189,6 +189,7 @@ const predictiveModelInference = async (weatherData) => {
   return result.dataSync()[1];
 };
 
+// Simulated Historical confirmed malaria data over the last 3 weeks
 const historicalData = [12.323, 10.601, 6.653, 5.059, 8.528, 10.171, 13.362, 9.727, 7.78, 8.62, 5.446, 4.63, 6.626, 5.102, 7.312, 5.716, 6.081];
 /**
  * Baseline Data
@@ -205,9 +206,10 @@ function calculateMalariaThresholds(currentIncidence) {
   const averageIncidence = recentData.reduce((sum, value) => sum + value, 0) / recentData.length;
 
   // Calculate thresholds based on average
-  const normalThreshold = averageIncidence;
+  // Assume average is 10.73
+  const normalThreshold = averageIncidence; // example 7.45 is average. average or below average is normal
+  const alertThreshold = 1.5 * averageIncidence; // 1.5 times average incidence for last 3 weeks
   const warningThreshold = currentIncidence > averageIncidence || currentIncidence < 1.5 * averageIncidence ? currentIncidence : null;
-  const alertThreshold = 1.5 * averageIncidence;
 
   // Analyze current incidence
   if (currentIncidence > alertThreshold) {
@@ -219,7 +221,7 @@ function calculateMalariaThresholds(currentIncidence) {
         </p>
       </div>
     );
-  } else if (currentIncidence <= warningThreshold) {
+  } else if (currentIncidence < alertThreshold && currentIncidence > normalThreshold) {
     return (
       <div role='alert' className='alert alert-warning'>
         <p className='text-base text-neutral-800 dark:text-neutral-50'>
